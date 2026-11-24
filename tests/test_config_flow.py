@@ -60,7 +60,7 @@ async def test_flow_with_2fa(hass: HomeAssistant) -> None:
         result = await hass.config_entries.flow.async_configure(result["flow_id"], USER_INPUT)
         assert result["step_id"] == "two_factor"
         result = await hass.config_entries.flow.async_configure(
-            result["flow_id"], {"channel": "EMAIL"}
+            result["flow_id"], {"channel": "email"}
         )
         req.assert_awaited_once_with("EMAIL")
         assert result["step_id"] == "two_factor_code"

@@ -66,9 +66,9 @@ _LOGGER = logging.getLogger(__name__)
 _PASSWORD = TextSelector(TextSelectorConfig(type=TextSelectorType.PASSWORD))
 _CHANNEL_SCHEMA = vol.Schema(
     {
-        vol.Required(CONF_2FA_CHANNEL, default="SMS"): SelectSelector(
+        vol.Required(CONF_2FA_CHANNEL, default="sms"): SelectSelector(
             SelectSelectorConfig(
-                options=["SMS", "EMAIL"],
+                options=["sms", "email"],
                 translation_key="channel",
                 mode=SelectSelectorMode.LIST,
             )
@@ -186,7 +186,7 @@ class PicnicGrocyConfigFlow(ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             assert self._picnic is not None
             try:
-                await self._picnic.request_2fa_code(user_input[CONF_2FA_CHANNEL])
+                await self._picnic.request_2fa_code(user_input[CONF_2FA_CHANNEL].upper())
             except PicnicError:
                 _LOGGER.exception("Requesting the 2FA code failed")
                 errors["base"] = "cannot_send_code"

@@ -75,8 +75,8 @@
   "selector": {
     "channel": {
       "options": {
-        "SMS": "SMS",
-        "EMAIL": "E-mail"
+        "sms": "SMS",
+        "email": "E-mail"
       }
     }
   },
