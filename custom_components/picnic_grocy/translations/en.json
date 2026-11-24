@@ -1,0 +1,110 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Picnic → Grocy",
+        "description": "Log in to Picnic and connect your Grocy instance. Tip: create a separate API key in Grocy for this integration.",
+        "data": {
+          "country": "Picnic country",
+          "username": "Picnic e-mail address",
+          "password": "Picnic password",
+          "grocy_url": "Grocy URL",
+          "grocy_api_key": "Grocy API key"
+        },
+        "data_description": {
+          "grocy_url": "Grocy add-on: http://a0d7b954-grocy (the add-on needs a host port, e.g. 9192, set in its network settings). Otherwise e.g. http://192.168.1.10:9192"
+        }
+      },
+      "two_factor": {
+        "title": "Two-factor authentication",
+        "description": "Picnic wants to confirm the login. Where should the code be sent?",
+        "data": {
+          "channel": "Send code via"
+        }
+      },
+      "two_factor_code": {
+        "title": "Enter code",
+        "description": "Enter the code Picnic just sent you.",
+        "data": {
+          "code": "Code"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Log in to Picnic again",
+        "description": "The Picnic login for {username} has expired.",
+        "data": {
+          "password": "Picnic password"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Picnic e-mail address or password is wrong.",
+      "cannot_connect": "Picnic cannot be reached.",
+      "grocy_invalid_auth": "Grocy rejected the API key.",
+      "grocy_cannot_connect": "Grocy cannot be reached – check URL and port.",
+      "cannot_send_code": "Picnic could not send the code.",
+      "invalid_code": "The code is wrong or expired."
+    },
+    "abort": {
+      "already_configured": "This Picnic account is already set up.",
+      "reauth_successful": "Login renewed."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Import settings",
+        "data": {
+          "auto_import": "Import new deliveries automatically",
+          "dry_run": "Dry run (only report, change nothing in Grocy)",
+          "create_missing_products": "Create unknown products in Grocy",
+          "match_by_name": "Match existing products by exact name",
+          "location_id": "Storage location for new products",
+          "quantity_unit_id": "Quantity unit for new products",
+          "best_before_days_perishable": "Default due days – fresh products",
+          "best_before_days_durable": "Default due days – long-life products",
+          "skip_keywords": "Skip articles containing (comma-separated)"
+        },
+        "data_description": {
+          "dry_run": "Leave on until a test import looks right.",
+          "best_before_days_durable": "0 = never expires."
+        }
+      }
+    }
+  },
+  "selector": {
+    "channel": {
+      "options": {
+        "SMS": "SMS",
+        "EMAIL": "E-mail"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "last_import": {
+        "name": "Last import"
+      }
+    }
+  },
+  "services": {
+    "import_delivery": {
+      "name": "Import delivery",
+      "description": "Books a completed Picnic delivery into Grocy.",
+      "fields": {
+        "delivery_id": {
+          "name": "Delivery ID",
+          "description": "Leave empty for the latest completed delivery."
+        },
+        "dry_run": {
+          "name": "Dry run",
+          "description": "Only report what would be booked."
+        },
+        "config_entry_id": {
+          "name": "Account",
+          "description": "Only needed with several Picnic accounts."
+        }
+      }
+    }
+  }
+}

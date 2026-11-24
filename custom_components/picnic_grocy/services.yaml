@@ -1,0 +1,17 @@
+import_delivery:
+  fields:
+    delivery_id:
+      required: false
+      example: "3ABC4DEF5G"
+      selector:
+        text:
+    dry_run:
+      required: false
+      default: true
+      selector:
+        boolean:
+    config_entry_id:
+      required: false
+      selector:
+        config_entry:
+          integration: picnic_grocy

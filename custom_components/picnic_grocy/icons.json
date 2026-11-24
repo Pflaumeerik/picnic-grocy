@@ -1,0 +1,7 @@
+{
+  "services": {
+    "import_delivery": {
+      "service": "mdi:cart-arrow-down"
+    }
+  }
+}
