@@ -48,6 +48,7 @@ EVENT_IMPORTED: Final = f"{DOMAIN}_imported"
 SERVICE_IMPORT_DELIVERY: Final = "import_delivery"
 ATTR_DELIVERY_ID: Final = "delivery_id"
 ATTR_DRY_RUN: Final = "dry_run"
+ATTR_DEBUG: Final = "debug"
 ATTR_CONFIG_ENTRY_ID: Final = "config_entry_id"
 
 STORAGE_VERSION: Final = 1

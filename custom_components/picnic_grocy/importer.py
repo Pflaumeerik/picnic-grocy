@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
 from datetime import date, timedelta
+import re
 from typing import Any
 
 from .const import (
@@ -48,6 +49,7 @@ class ItemResult:
     price: float | None = None
     message: str | None = None
     decorators: list[str] = field(default_factory=list)
+    raw: list[dict[str, Any]] | None = None
 
 
 @dataclass
@@ -82,8 +84,12 @@ class ImportResult:
         }
 
 
-def _keywords(raw: str | None) -> list[str]:
-    return [k.strip().lower() for k in (raw or "").split(",") if k.strip()]
+def _keyword_pattern(raw: str | None) -> re.Pattern[str] | None:
+    """Whole-word match, so 'Tasche' skips 'Tasche' but not 'Maultaschen'."""
+    words = [re.escape(k.strip()) for k in (raw or "").split(",") if k.strip()]
+    if not words:
+        return None
+    return re.compile(r"(?<!\w)(?:" + "|".join(words) + r")(?!\w)", re.IGNORECASE)
 
 
 def best_before(days: int | None, today: date) -> str:
@@ -142,10 +148,11 @@ class Importer:
         articles: list[PicnicArticle],
         dry_run: bool,
         today: date | None = None,
+        debug: bool = False,
     ) -> ImportResult:
         today = today or date.today()
         result = ImportResult(delivery_id=delivery_id, dry_run=dry_run)
-        skip = _keywords(self._opt.get(OPT_SKIP_KEYWORDS))
+        skip = _keyword_pattern(self._opt.get(OPT_SKIP_KEYWORDS))
         for art in articles:
             item = ItemResult(
                 article_id=art.article_id,
@@ -154,9 +161,10 @@ class Importer:
                 status=FAILED,
                 price=art.price_per_unit,
                 decorators=sorted({str(d.get("type")) for d in art.decorators}),
+                raw=art.raw_lines if debug else None,
             )
             result.items.append(item)
-            if any(k in art.name.lower() for k in skip):
+            if skip and skip.search(art.name):
                 item.status = SKIPPED
                 continue
             try:

@@ -103,6 +103,10 @@
         "config_entry_id": {
           "name": "Konto",
           "description": "Nur bei mehreren Picnic-Konten nötig."
+        },
+        "debug": {
+          "name": "Diagnose",
+          "description": "Zusätzlich die Original-Bestellzeilen von Picnic zurückgeben (zur Fehlersuche)."
         }
       }
     }

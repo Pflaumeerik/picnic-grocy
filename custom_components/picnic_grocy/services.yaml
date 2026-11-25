@@ -15,3 +15,9 @@ import_delivery:
       selector:
         config_entry:
           integration: picnic_grocy
+    debug:
+      required: false
+      default: false
+      advanced: true
+      selector:
+        boolean:

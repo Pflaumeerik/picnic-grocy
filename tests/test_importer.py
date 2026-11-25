@@ -106,3 +106,28 @@ async def test_one_failure_does_not_stop_others():
     status = {i.article_id: i.status for i in result.items}
     assert status["s200"] == FAILED
     assert status["s100"] == CREATED
+
+
+async def test_keywords_match_whole_words_only():
+    from custom_components.picnic_grocy.picnic_api import PicnicArticle
+
+    arts = [
+        PicnicArticle("a1", "Bürger Schwäbische Maultaschen", None, 1, 229, True),
+        PicnicArticle("a2", "Picnic Tasche", None, 1, 10, False),
+        PicnicArticle("a3", "Pfand Flasche 0,25", None, 1, 25, False),
+    ]
+    result = await Importer(FakeGrocy(), dict(DEFAULT_OPTIONS)).run("D", arts, True, TODAY)
+    status = {i.article_id: i.status for i in result.items}
+    assert status == {"a1": CREATED, "a2": SKIPPED, "a3": SKIPPED}
+
+
+def test_placeholder_price_dropped():
+    from custom_components.picnic_grocy.picnic_api import PicnicArticle
+
+    assert PicnicArticle("x", "Joghurt", None, 3, 432199 * 3, True).price_per_unit is None
+    assert PicnicArticle("y", "Milch", None, 2, 250, True).price_per_unit == 1.25
+
+
+def test_debug_keeps_raw_lines():
+    arts = parse_articles(DELIVERY)
+    assert arts[0].raw_lines and "items" in arts[0].raw_lines[0]

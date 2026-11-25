@@ -133,6 +133,7 @@ class PicnicGrocyCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         delivery_id: str | None = None,
         dry_run: bool = True,
         mark_known: bool | None = None,
+        debug: bool = False,
     ) -> ImportResult:
         """Import one delivery (default: the latest completed one)."""
         try:
@@ -156,7 +157,7 @@ class PicnicGrocyCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         articles = parse_articles(delivery or {})
         importer = Importer(self.grocy, self.options)
         try:
-            result = await importer.run(delivery_id, articles, dry_run=dry_run)
+            result = await importer.run(delivery_id, articles, dry_run=dry_run, debug=debug)
         except GrocyAuthError as err:
             raise HomeAssistantError("Grocy rejected the API key") from err
         except GrocyError as err:
@@ -167,7 +168,10 @@ class PicnicGrocyCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         known: list[str] = self._state.setdefault("known", [])
         if mark_known and delivery_id not in known:
             known.append(delivery_id)
-        self._state["last_result"] = result.as_dict()
+        stored = result.as_dict()
+        for item in stored["items"]:
+            item.pop("raw", None)
+        self._state["last_result"] = stored
         self._state["last_run"] = dt_util.utcnow().isoformat()
         await self._save()
 

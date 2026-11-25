@@ -19,6 +19,7 @@ from homeassistant.helpers.typing import ConfigType
 
 from .const import (
     ATTR_CONFIG_ENTRY_ID,
+    ATTR_DEBUG,
     ATTR_DELIVERY_ID,
     ATTR_DRY_RUN,
     CONF_AUTH_TOKEN,
@@ -42,6 +43,7 @@ SERVICE_SCHEMA = vol.Schema(
         vol.Optional(ATTR_CONFIG_ENTRY_ID): cv.string,
         vol.Optional(ATTR_DELIVERY_ID): cv.string,
         vol.Optional(ATTR_DRY_RUN, default=True): cv.boolean,
+        vol.Optional(ATTR_DEBUG, default=False): cv.boolean,
     }
 )
 
@@ -63,8 +65,13 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         result = await coordinator.async_import(
             call.data.get(ATTR_DELIVERY_ID) or None,
             dry_run=call.data[ATTR_DRY_RUN],
+            debug=call.data[ATTR_DEBUG],
         )
-        return result.as_dict()
+        data = result.as_dict()
+        if not call.data[ATTR_DEBUG]:
+            for item in data["items"]:
+                item.pop("raw", None)
+        return data
 
     hass.services.async_register(
         DOMAIN,

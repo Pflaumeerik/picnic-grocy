@@ -103,6 +103,10 @@
         "config_entry_id": {
           "name": "Account",
           "description": "Only needed with several Picnic accounts."
+        },
+        "debug": {
+          "name": "Diagnostics",
+          "description": "Also return Picnic's raw order lines (for troubleshooting)."
         }
       }
     }

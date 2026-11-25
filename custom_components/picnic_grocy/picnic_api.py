@@ -24,6 +24,7 @@ _HEADERS = {
     "x-picnic-did": "598F770380CA54B6",
 }
 _TIMEOUT = aiohttp.ClientTimeout(total=30)
+MAX_PLAUSIBLE_PRICE = 500.0
 
 
 class PicnicError(Exception):
@@ -53,13 +54,16 @@ class PicnicArticle:
     line_price_cents: int | None
     perishable: bool | None
     decorators: list[dict[str, Any]] = field(default_factory=list)
+    raw_lines: list[dict[str, Any]] = field(default_factory=list)
 
     @property
     def price_per_unit(self) -> float | None:
-        """Price of one piece in currency units, if Picnic sent a line price."""
+        """Price of one piece in currency units, if Picnic sent a plausible one."""
         if self.line_price_cents is None or self.amount <= 0:
             return None
-        return round(self.line_price_cents / self.amount / 100, 2)
+        price = round(self.line_price_cents / self.amount / 100, 2)
+        # Picnic marks some promotion lines with placeholder prices; drop those.
+        return price if 0 < price <= MAX_PLAUSIBLE_PRICE else None
 
 
 class PicnicClient:
@@ -202,6 +206,7 @@ def parse_articles(delivery: dict[str, Any]) -> list[PicnicArticle]:
                     if existing.line_price_cents is not None and price is not None:
                         existing.line_price_cents += price
                     existing.decorators.extend(decorators)
+                    existing.raw_lines.append(_slim(line))
                     continue
                 merged[art_id] = PicnicArticle(
                     article_id=art_id,
@@ -211,5 +216,22 @@ def parse_articles(delivery: dict[str, Any]) -> list[PicnicArticle]:
                     line_price_cents=price,
                     perishable=art.get("perishable"),
                     decorators=list(decorators),
+                    raw_lines=[_slim(line)],
                 )
     return list(merged.values())
+
+
+def _slim(line: dict[str, Any]) -> dict[str, Any]:
+    """Order line without images, for diagnostics."""
+    def strip(obj: Any) -> Any:
+        if isinstance(obj, dict):
+            return {
+                k: strip(v)
+                for k, v in obj.items()
+                if "image" not in k and k not in ("max_count",)
+            }
+        if isinstance(obj, list):
+            return [strip(v) for v in obj]
+        return obj
+
+    return strip(line)
