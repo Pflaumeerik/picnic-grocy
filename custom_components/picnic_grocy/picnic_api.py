@@ -178,33 +178,51 @@ class PicnicClient:
         return await self._request("GET", f"/deliveries/{delivery_id}")
 
 
+def _line_total(line: dict[str, Any]) -> int | None:
+    """Price actually paid for a line: promotion price if present, else line price."""
+    for deco in line.get("decorators") or []:
+        if deco.get("type") == "PRICE" and deco.get("display_price") is not None:
+            return int(deco["display_price"])
+    for key in ("price", "display_price"):
+        if line.get(key) is not None:
+            return int(line[key])
+    return None
+
+
+def _quantity(article: dict[str, Any]) -> int:
+    for deco in article.get("decorators") or []:
+        if deco.get("type") == "QUANTITY" and deco.get("quantity"):
+            return int(deco["quantity"])
+    return 1
+
+
 def parse_articles(delivery: dict[str, Any]) -> list[PicnicArticle]:
-    """Flatten a delivery into articles, merging identical article IDs."""
+    """Flatten a delivery into articles, merging identical article IDs.
+
+    Picnic puts a placeholder into the article price; the real price is on the
+    order line. Promotion lines ("3 for 2.59") can bundle different articles,
+    so the line total is split across them by quantity.
+    """
     merged: dict[str, PicnicArticle] = {}
     for order in delivery.get("orders") or []:
         for line in order.get("items") or []:
-            articles = line.get("items") or []
-            line_price = line.get("price")
-            if line_price is None:
-                line_price = line.get("display_price")
-            for index, art in enumerate(articles):
-                art_id = art.get("id")
-                if not art_id:
-                    continue
+            articles = [a for a in line.get("items") or [] if a.get("id")]
+            if not articles:
+                continue
+            total = _line_total(line)
+            pieces = sum(_quantity(a) for a in articles) or 1
+            for art in articles:
+                art_id = art["id"]
                 decorators = art.get("decorators") or []
-                amount = 1
-                for deco in decorators:
-                    if deco.get("type") == "QUANTITY" and deco.get("quantity"):
-                        amount = int(deco["quantity"])
-                # A line price covers the whole line; only attach it once.
-                price = line_price if (index == 0 and len(articles) == 1) else None
-                if price is None and art.get("price") is not None:
-                    price = art["price"] * amount
+                amount = _quantity(art)
+                price = round(total * amount / pieces) if total is not None else None
                 if art_id in merged:
                     existing = merged[art_id]
                     existing.amount += amount
                     if existing.line_price_cents is not None and price is not None:
                         existing.line_price_cents += price
+                    else:
+                        existing.line_price_cents = None
                     existing.decorators.extend(decorators)
                     existing.raw_lines.append(_slim(line))
                     continue

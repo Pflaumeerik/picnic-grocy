@@ -131,3 +131,35 @@ def test_placeholder_price_dropped():
 def test_debug_keeps_raw_lines():
     arts = parse_articles(DELIVERY)
     assert arts[0].raw_lines and "items" in arts[0].raw_lines[0]
+
+
+def test_fresh_detection():
+    from custom_components.picnic_grocy.picnic_api import PicnicArticle
+
+    imp = Importer(FakeGrocy(), dict(DEFAULT_OPTIONS))
+    fresh = lambda n, p=False: imp.is_fresh(PicnicArticle("x", n, None, 1, 100, p))  # noqa: E731
+    assert fresh("Edeka Herzstücke Mini Rispentomaten")
+    assert fresh("Rucola")
+    assert fresh("Edeka Herzstücke Bananen")
+    assert fresh("Bio Champignons braun mittel")
+    assert not fresh("Edeka Bio Bio Tomaten passiert")
+    assert not fresh("Gut&Günstig Getrocknete Tomaten in Öl")
+    assert not fresh("Barilla Spaghettoni")
+    assert fresh("Barilla Spaghettoni", True)  # Picnic flag wins
+
+
+def test_promo_line_split_and_discount():
+    delivery = {"orders": [{"items": [
+        {"price": 297, "display_price": 297,
+         "decorators": [{"type": "PRICE", "display_price": 259}],
+         "items": [
+            {"id": "a", "name": "Joghurt A", "price": 432199, "decorators": [{"type": "QUANTITY", "quantity": 2}]},
+            {"id": "b", "name": "Joghurt B", "price": 432199, "decorators": [{"type": "QUANTITY", "quantity": 1}]},
+         ]},
+        {"price": 250, "items": [{"id": "m", "name": "Milch", "price": 432199,
+                                  "decorators": [{"type": "QUANTITY", "quantity": 2}]}]},
+    ]}]}
+    arts = {a.article_id: a for a in parse_articles(delivery)}
+    assert arts["a"].line_price_cents == 173 and arts["b"].line_price_cents == 86
+    assert arts["a"].price_per_unit == 0.86
+    assert arts["m"].price_per_unit == 1.25

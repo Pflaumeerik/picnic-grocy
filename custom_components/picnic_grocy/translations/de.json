@@ -63,11 +63,13 @@
           "quantity_unit_id": "Mengeneinheit für neue Produkte",
           "best_before_days_perishable": "Standard-MHD in Tagen – Frischware",
           "best_before_days_durable": "Standard-MHD in Tagen – haltbare Ware",
-          "skip_keywords": "Artikel überspringen, die enthalten (kommagetrennt)"
+          "skip_keywords": "Artikel überspringen, die enthalten (kommagetrennt)",
+          "fresh_keywords": "Stichwörter für Frischware (Namensteil, kommagetrennt)"
         },
         "data_description": {
           "dry_run": "Eingeschaltet lassen, bis ein Probeimport passt.",
-          "best_before_days_durable": "0 = läuft nie ab."
+          "best_before_days_durable": "0 = läuft nie ab.",
+          "fresh_keywords": "Neue Produkte, deren Name eines davon enthält, bekommen das Frischware-MHD. Kühlware erkennt Picnic selbst. Mit „-“ davor schließt ein Wort aus, z. B. -passiert."
         }
       }
     }

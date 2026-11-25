@@ -63,11 +63,13 @@
           "quantity_unit_id": "Quantity unit for new products",
           "best_before_days_perishable": "Default due days – fresh products",
           "best_before_days_durable": "Default due days – long-life products",
-          "skip_keywords": "Skip articles containing (comma-separated)"
+          "skip_keywords": "Skip articles containing (comma-separated)",
+          "fresh_keywords": "Fresh produce keywords (part of a name, comma-separated)"
         },
         "data_description": {
           "dry_run": "Leave on until a test import looks right.",
-          "best_before_days_durable": "0 = never expires."
+          "best_before_days_durable": "0 = never expires.",
+          "fresh_keywords": "New products whose name contains one of these get the fresh due days. Chilled goods are detected automatically. A leading “-” excludes, e.g. -canned."
         }
       }
     }

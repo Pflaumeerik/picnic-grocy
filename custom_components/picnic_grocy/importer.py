@@ -15,6 +15,7 @@ from .const import (
     OPT_BBD_DURABLE,
     OPT_BBD_PERISHABLE,
     OPT_CREATE_PRODUCTS,
+    OPT_FRESH_KEYWORDS,
     OPT_LOCATION_ID,
     OPT_MATCH_BY_NAME,
     OPT_QU_ID,
@@ -108,6 +109,16 @@ class Importer:
         self._products_by_name: dict[str, dict[str, Any]] | None = None
         self._location_id: int | None = None
         self._qu_id: int | None = None
+
+    def is_fresh(self, art: PicnicArticle) -> bool:
+        """Chilled goods (Picnic flag) or produce/bread (keyword, part of a word)."""
+        if art.perishable:
+            return True
+        name = art.name.lower()
+        words = [k.strip().lower() for k in str(self._opt.get(OPT_FRESH_KEYWORDS) or "").split(",")]
+        if any(w[1:].strip() in name for w in words if w.startswith("-") and w[1:].strip()):
+            return False
+        return any(w in name for w in words if w and not w.startswith("-"))
 
     async def _defaults(self) -> None:
         if self._location_id is not None:
@@ -234,7 +245,7 @@ class Importer:
             name = f"{art.name} [{art.article_id}]"
         days = (
             self._opt.get(OPT_BBD_PERISHABLE, 7)
-            if art.perishable
+            if self.is_fresh(art)
             else self._opt.get(OPT_BBD_DURABLE, 180)
         )
         fields = {

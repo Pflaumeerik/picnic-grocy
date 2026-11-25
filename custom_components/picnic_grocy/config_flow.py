@@ -47,6 +47,7 @@ from .const import (
     OPT_BBD_PERISHABLE,
     OPT_CREATE_PRODUCTS,
     OPT_DRY_RUN,
+    OPT_FRESH_KEYWORDS,
     OPT_LOCATION_ID,
     OPT_MATCH_BY_NAME,
     OPT_QU_ID,
@@ -306,6 +307,9 @@ class PicnicGrocyOptionsFlow(OptionsFlow):
                     OPT_BBD_PERISHABLE, default=current[OPT_BBD_PERISHABLE]
                 ): days,
                 vol.Required(OPT_BBD_DURABLE, default=current[OPT_BBD_DURABLE]): days,
+                vol.Optional(
+                    OPT_FRESH_KEYWORDS, default=current[OPT_FRESH_KEYWORDS]
+                ): TextSelector(TextSelectorConfig(multiline=True)),
                 vol.Optional(
                     OPT_SKIP_KEYWORDS, default=current[OPT_SKIP_KEYWORDS]
                 ): str,

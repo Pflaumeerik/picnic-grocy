@@ -28,6 +28,7 @@ OPT_QU_ID: Final = "quantity_unit_id"
 OPT_BBD_PERISHABLE: Final = "best_before_days_perishable"
 OPT_BBD_DURABLE: Final = "best_before_days_durable"
 OPT_SKIP_KEYWORDS: Final = "skip_keywords"
+OPT_FRESH_KEYWORDS: Final = "fresh_keywords"
 
 DEFAULT_OPTIONS: Final = {
     OPT_AUTO_IMPORT: True,
@@ -37,6 +38,14 @@ DEFAULT_OPTIONS: Final = {
     OPT_BBD_PERISHABLE: 7,
     OPT_BBD_DURABLE: 180,
     OPT_SKIP_KEYWORDS: "Pfand, Tüte, Tasche",
+    OPT_FRESH_KEYWORDS: (
+        "Tomate, Gurke, Paprika, Champignon, Pilz, Rucola, Salat, Spinat, "
+        "Zucchini, Aubergine, Brokkoli, Blumenkohl, Möhre, Karotte, Lauch, "
+        "Zwiebel, Kräuter, Banane, Apfel, Äpfel, Birne, Traube, Beere, Physalis, "
+        "Zitrone, Limette, Orange, Mandarine, Clementine, Kiwi, Mango, Avocado, "
+        "Ananas, Melone, Brot, Brötchen, "
+        "-passiert, -getrocknet, -Saft, -Chips, -Dose, -in Öl, -Mark"
+    ),
 }
 
 UPDATE_INTERVAL: Final = timedelta(minutes=30)
