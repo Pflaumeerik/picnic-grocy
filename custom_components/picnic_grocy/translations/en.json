@@ -59,17 +59,19 @@
           "dry_run": "Dry run (only report, change nothing in Grocy)",
           "create_missing_products": "Create unknown products in Grocy",
           "match_by_name": "Match existing products by exact name",
-          "location_id": "Storage location for new products",
+          "location_id": "Storage location for all other new products",
           "quantity_unit_id": "Quantity unit for new products",
           "best_before_days_perishable": "Default due days – fresh products",
           "best_before_days_durable": "Default due days – long-life products",
           "skip_keywords": "Skip articles containing (comma-separated)",
-          "fresh_keywords": "Fresh produce keywords (part of a name, comma-separated)"
+          "fresh_keywords": "Fresh produce keywords (part of a name, comma-separated)",
+          "location_chilled_id": "Storage location for new chilled products"
         },
         "data_description": {
           "dry_run": "Leave on until a test import looks right.",
           "best_before_days_durable": "0 = never expires.",
-          "fresh_keywords": "New products whose name contains one of these get the fresh due days. Chilled goods are detected automatically. A leading “-” excludes, e.g. -canned."
+          "fresh_keywords": "New products whose name contains one of these get the fresh due days. Chilled goods are detected automatically. A leading “-” excludes, e.g. -canned.",
+          "location_chilled_id": "Picnic marks chilled goods. Automatic = a location named Fridge/Kühlschrank."
         }
       }
     }

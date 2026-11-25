@@ -48,6 +48,7 @@ from .const import (
     OPT_CREATE_PRODUCTS,
     OPT_DRY_RUN,
     OPT_FRESH_KEYWORDS,
+    OPT_LOCATION_CHILLED_ID,
     OPT_LOCATION_ID,
     OPT_MATCH_BY_NAME,
     OPT_QU_ID,
@@ -260,7 +261,7 @@ class PicnicGrocyOptionsFlow(OptionsFlow):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         if user_input is not None:
-            for key in (OPT_LOCATION_ID, OPT_QU_ID):
+            for key in (OPT_LOCATION_ID, OPT_LOCATION_CHILLED_ID, OPT_QU_ID):
                 if user_input.get(key) in ("", "0", None):
                     user_input.pop(key, None)
             return self.async_create_entry(data=user_input)
@@ -299,6 +300,10 @@ class PicnicGrocyOptionsFlow(OptionsFlow):
                 ): BooleanSelector(),
                 vol.Optional(
                     OPT_LOCATION_ID, default=str(current.get(OPT_LOCATION_ID, "0"))
+                ): SelectSelector(SelectSelectorConfig(options=locations)),
+                vol.Optional(
+                    OPT_LOCATION_CHILLED_ID,
+                    default=str(current.get(OPT_LOCATION_CHILLED_ID, "0")),
                 ): SelectSelector(SelectSelectorConfig(options=locations)),
                 vol.Optional(
                     OPT_QU_ID, default=str(current.get(OPT_QU_ID, "0"))

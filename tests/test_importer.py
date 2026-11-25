@@ -163,3 +163,14 @@ def test_promo_line_split_and_discount():
     assert arts["a"].line_price_cents == 173 and arts["b"].line_price_cents == 86
     assert arts["a"].price_per_unit == 0.86
     assert arts["m"].price_per_unit == 1.25
+
+
+async def test_chilled_goods_go_to_fridge():
+    grocy = FakeGrocy()
+    opts = {**DEFAULT_OPTIONS, "location_id": "3"}
+    await Importer(grocy, opts).run("D1", parse_articles(DELIVERY), False, TODAY)
+    milk = grocy.prods[grocy.barcodes["picnic:s100"]]
+    assert milk["location_id"] == 2  # "Kühlschrank" found automatically
+    # non-chilled new products use the configured location
+    new = [p for p in grocy.prods.values() if p["id"] != 1 and p is not milk]
+    assert all(p["location_id"] == 3 for p in new)

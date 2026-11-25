@@ -16,6 +16,7 @@ from .const import (
     OPT_BBD_PERISHABLE,
     OPT_CREATE_PRODUCTS,
     OPT_FRESH_KEYWORDS,
+    OPT_LOCATION_CHILLED_ID,
     OPT_LOCATION_ID,
     OPT_MATCH_BY_NAME,
     OPT_QU_ID,
@@ -26,6 +27,7 @@ from .picnic_api import PicnicArticle
 
 NEVER_EXPIRES = "2999-12-31"
 _PIECE_NAMES = ("stück", "stk", "piece", "pieces", "stuk", "pièce")
+_FRIDGE_NAMES = ("kühlschrank", "fridge", "koelkast", "réfrigérateur", "frigo")
 
 # Item results
 BOOKED = "booked"  # existing product, stock added
@@ -108,6 +110,7 @@ class Importer:
         self._opt = options
         self._products_by_name: dict[str, dict[str, Any]] | None = None
         self._location_id: int | None = None
+        self._chilled_location_id: int | None = None
         self._qu_id: int | None = None
 
     def is_fresh(self, art: PicnicArticle) -> bool:
@@ -135,6 +138,18 @@ class Importer:
             int(wanted_loc) if wanted_loc and int(wanted_loc) in loc_ids
             else int(locations[0]["id"])
         )
+        wanted_chilled = self._opt.get(OPT_LOCATION_CHILLED_ID)
+        if wanted_chilled and int(wanted_chilled) in loc_ids:
+            self._chilled_location_id = int(wanted_chilled)
+        else:
+            fridge = next(
+                (
+                    loc for loc in locations
+                    if any(n in str(loc.get("name", "")).lower() for n in _FRIDGE_NAMES)
+                ),
+                None,
+            )
+            self._chilled_location_id = int(fridge["id"]) if fridge else self._location_id
         wanted_qu = self._opt.get(OPT_QU_ID)
         qu_ids = {int(qu["id"]) for qu in units}
         if wanted_qu and int(wanted_qu) in qu_ids:
@@ -253,7 +268,9 @@ class Importer:
             "description": " · ".join(
                 part for part in (art.unit_quantity, f"Picnic-Artikel {art.article_id}") if part
             ),
-            "location_id": self._location_id,
+            "location_id": (
+                self._chilled_location_id if art.perishable else self._location_id
+            ),
             "qu_id_purchase": self._qu_id,
             "qu_id_stock": self._qu_id,
             "default_best_before_days": int(days),
