@@ -76,6 +76,9 @@ class FakeGrocy:
     async def quantity_units(self):
         return [{"id": 3, "name": "Pack"}, {"id": 2, "name": "Stück"}]
 
+    async def product_groups(self):
+        return [{"id": 1, "name": "Frischware"}]
+
     async def products(self):
         return list(self.prods.values())
 

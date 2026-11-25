@@ -47,6 +47,7 @@ from .const import (
     OPT_BBD_PERISHABLE,
     OPT_CREATE_PRODUCTS,
     OPT_DRY_RUN,
+    OPT_FRESH_GROUP_ID,
     OPT_FRESH_KEYWORDS,
     OPT_LOCATION_CHILLED_ID,
     OPT_LOCATION_ID,
@@ -261,7 +262,7 @@ class PicnicGrocyOptionsFlow(OptionsFlow):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         if user_input is not None:
-            for key in (OPT_LOCATION_ID, OPT_LOCATION_CHILLED_ID, OPT_QU_ID):
+            for key in (OPT_LOCATION_ID, OPT_LOCATION_CHILLED_ID, OPT_QU_ID, OPT_FRESH_GROUP_ID):
                 if user_input.get(key) in ("", "0", None):
                     user_input.pop(key, None)
             return self.async_create_entry(data=user_input)
@@ -282,8 +283,12 @@ class PicnicGrocyOptionsFlow(OptionsFlow):
                 SelectOptionDict(value=str(qu["id"]), label=str(qu["name"]))
                 for qu in await grocy.quantity_units()
             ]
+            groups = [auto] + [
+                SelectOptionDict(value=str(g["id"]), label=str(g["name"]))
+                for g in await grocy.product_groups()
+            ]
         except GrocyError:
-            locations = units = [auto]
+            locations = units = groups = [auto]
 
         days = NumberSelector(
             NumberSelectorConfig(min=0, max=3650, step=1, mode=NumberSelectorMode.BOX)
@@ -305,6 +310,10 @@ class PicnicGrocyOptionsFlow(OptionsFlow):
                     OPT_LOCATION_CHILLED_ID,
                     default=str(current.get(OPT_LOCATION_CHILLED_ID, "0")),
                 ): SelectSelector(SelectSelectorConfig(options=locations)),
+                vol.Optional(
+                    OPT_FRESH_GROUP_ID,
+                    default=str(current.get(OPT_FRESH_GROUP_ID, "0")),
+                ): SelectSelector(SelectSelectorConfig(options=groups)),
                 vol.Optional(
                     OPT_QU_ID, default=str(current.get(OPT_QU_ID, "0"))
                 ): SelectSelector(SelectSelectorConfig(options=units)),

@@ -65,13 +65,15 @@
           "best_before_days_durable": "Default due days – long-life products",
           "skip_keywords": "Skip articles containing (comma-separated)",
           "fresh_keywords": "Fresh produce keywords (part of a name, comma-separated)",
-          "location_chilled_id": "Storage location for new chilled products"
+          "location_chilled_id": "Storage location for new chilled products",
+          "fresh_product_group_id": "Product group for new fresh products"
         },
         "data_description": {
           "dry_run": "Leave on until a test import looks right.",
           "best_before_days_durable": "0 = never expires.",
           "fresh_keywords": "New products whose name contains one of these get the fresh due days. Chilled goods are detected automatically. A leading “-” excludes, e.g. -canned.",
-          "location_chilled_id": "Picnic marks chilled goods. Automatic = a location named Fridge/Kühlschrank."
+          "location_chilled_id": "Picnic marks chilled goods. Automatic = a location named Fridge/Kühlschrank.",
+          "fresh_product_group_id": "Lets automations treat fresh goods separately. Automatic = a group named Frischware/Fresh."
         }
       }
     }

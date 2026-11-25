@@ -174,3 +174,10 @@ async def test_chilled_goods_go_to_fridge():
     # non-chilled new products use the configured location
     new = [p for p in grocy.prods.values() if p["id"] != 1 and p is not milk]
     assert all(p["location_id"] == 3 for p in new)
+
+
+async def test_fresh_products_get_fresh_group():
+    grocy = FakeGrocy()
+    await Importer(grocy, dict(DEFAULT_OPTIONS)).run("D1", parse_articles(DELIVERY), False, TODAY)
+    milk = grocy.prods[grocy.barcodes["picnic:s100"]]
+    assert milk["product_group_id"] == 1

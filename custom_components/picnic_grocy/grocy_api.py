@@ -72,6 +72,9 @@ class GrocyClient:
     async def quantity_units(self) -> list[dict[str, Any]]:
         return await self._request("GET", "/objects/quantity_units") or []
 
+    async def product_groups(self) -> list[dict[str, Any]]:
+        return await self._request("GET", "/objects/product_groups") or []
+
     async def products(self) -> list[dict[str, Any]]:
         return await self._request("GET", "/objects/products") or []
 

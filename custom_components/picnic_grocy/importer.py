@@ -15,6 +15,7 @@ from .const import (
     OPT_BBD_DURABLE,
     OPT_BBD_PERISHABLE,
     OPT_CREATE_PRODUCTS,
+    OPT_FRESH_GROUP_ID,
     OPT_FRESH_KEYWORDS,
     OPT_LOCATION_CHILLED_ID,
     OPT_LOCATION_ID,
@@ -27,6 +28,7 @@ from .picnic_api import PicnicArticle
 
 NEVER_EXPIRES = "2999-12-31"
 _PIECE_NAMES = ("stück", "stk", "piece", "pieces", "stuk", "pièce")
+_FRESH_GROUP_NAMES = ("frischware", "fresh", "vers", "frais")
 _FRIDGE_NAMES = ("kühlschrank", "fridge", "koelkast", "réfrigérateur", "frigo")
 
 # Item results
@@ -111,6 +113,7 @@ class Importer:
         self._products_by_name: dict[str, dict[str, Any]] | None = None
         self._location_id: int | None = None
         self._chilled_location_id: int | None = None
+        self._fresh_group_id: int | None = None
         self._qu_id: int | None = None
 
     def is_fresh(self, art: PicnicArticle) -> bool:
@@ -150,6 +153,17 @@ class Importer:
                 None,
             )
             self._chilled_location_id = int(fridge["id"]) if fridge else self._location_id
+        groups = await self._grocy.product_groups()
+        group_ids = {int(g["id"]) for g in groups}
+        wanted_group = self._opt.get(OPT_FRESH_GROUP_ID)
+        if wanted_group and int(wanted_group) in group_ids:
+            self._fresh_group_id = int(wanted_group)
+        else:
+            fresh = next(
+                (g for g in groups if str(g.get("name", "")).strip().lower() in _FRESH_GROUP_NAMES),
+                None,
+            )
+            self._fresh_group_id = int(fresh["id"]) if fresh else None
         wanted_qu = self._opt.get(OPT_QU_ID)
         qu_ids = {int(qu["id"]) for qu in units}
         if wanted_qu and int(wanted_qu) in qu_ids:
@@ -258,12 +272,13 @@ class Importer:
             name = f"{art.name} ({art.unit_quantity})"
         if name.lower() in by_name:
             name = f"{art.name} [{art.article_id}]"
+        fresh = self.is_fresh(art)
         days = (
             self._opt.get(OPT_BBD_PERISHABLE, 7)
-            if self.is_fresh(art)
+            if fresh
             else self._opt.get(OPT_BBD_DURABLE, 180)
         )
-        fields = {
+        fields: dict[str, Any] = {
             "name": name,
             "description": " · ".join(
                 part for part in (art.unit_quantity, f"Picnic-Artikel {art.article_id}") if part
@@ -275,6 +290,8 @@ class Importer:
             "qu_id_stock": self._qu_id,
             "default_best_before_days": int(days),
         }
+        if fresh and self._fresh_group_id is not None:
+            fields["product_group_id"] = self._fresh_group_id
         product: dict[str, Any] = {**fields, "id": None}
         if not dry_run:
             product["id"] = await self._grocy.create_product(fields)
