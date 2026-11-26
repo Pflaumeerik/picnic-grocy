@@ -19,6 +19,8 @@ from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.selector import (
     BooleanSelector,
+    EntitySelector,
+    EntitySelectorConfig,
     NumberSelector,
     NumberSelectorConfig,
     NumberSelectorMode,
@@ -29,6 +31,7 @@ from homeassistant.helpers.selector import (
     TextSelector,
     TextSelectorConfig,
     TextSelectorType,
+    TimeSelector,
 )
 
 from .const import (
@@ -46,6 +49,8 @@ from .const import (
     OPT_BBD_DURABLE,
     OPT_BBD_PERISHABLE,
     OPT_CREATE_PRODUCTS,
+    OPT_DAILY_TIME,
+    OPT_DELIVERY_SENSOR,
     OPT_DRY_RUN,
     OPT_FRESH_GROUP_ID,
     OPT_FRESH_KEYWORDS,
@@ -262,6 +267,8 @@ class PicnicGrocyOptionsFlow(OptionsFlow):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         if user_input is not None:
+            if not user_input.get(OPT_DELIVERY_SENSOR):
+                user_input.pop(OPT_DELIVERY_SENSOR, None)
             for key in (OPT_LOCATION_ID, OPT_LOCATION_CHILLED_ID, OPT_QU_ID, OPT_FRESH_GROUP_ID):
                 if user_input.get(key) in ("", "0", None):
                     user_input.pop(key, None)
@@ -296,6 +303,13 @@ class PicnicGrocyOptionsFlow(OptionsFlow):
         schema = vol.Schema(
             {
                 vol.Required(OPT_AUTO_IMPORT, default=current[OPT_AUTO_IMPORT]): BooleanSelector(),
+                vol.Required(
+                    OPT_DAILY_TIME, default=current[OPT_DAILY_TIME]
+                ): TimeSelector(),
+                vol.Optional(
+                    OPT_DELIVERY_SENSOR,
+                    description={"suggested_value": current.get(OPT_DELIVERY_SENSOR)},
+                ): EntitySelector(EntitySelectorConfig(domain="sensor")),
                 vol.Required(OPT_DRY_RUN, default=current[OPT_DRY_RUN]): BooleanSelector(),
                 vol.Required(
                     OPT_CREATE_PRODUCTS, default=current[OPT_CREATE_PRODUCTS]

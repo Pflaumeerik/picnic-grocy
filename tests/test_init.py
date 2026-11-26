@@ -118,3 +118,69 @@ async def test_single_auth_error_does_not_force_reauth(hass: HomeAssistant) -> N
     await coordinator.async_refresh()
     await hass.async_block_till_done()
     assert [f for f in hass.config_entries.flow.async_progress() if f["context"]["source"] == SOURCE_REAUTH]
+
+
+async def test_no_polling_but_daily_and_button(hass: HomeAssistant) -> None:
+    from datetime import timedelta
+
+    from pytest_homeassistant_custom_component.common import async_fire_time_changed
+
+    from homeassistant.util import dt as dt_util
+
+    entry, picnic, grocy = await _setup(hass, {"dry_run": False, "daily_time": "20:00:00"})
+    picnic.deliveries.insert(0, {"delivery_id": "D2", "status": "COMPLETED"})
+
+    # An hour passes: nothing is polled any more.
+    async_fire_time_changed(hass, dt_util.utcnow() + timedelta(hours=1))
+    await hass.async_block_till_done()
+    assert grocy.stock == []
+
+    # The button imports right away.
+    await hass.services.async_call(
+        "button", "press", {"entity_id": "button.picnic_grocy_check_deliveries_now"}, blocking=True
+    )
+    await hass.async_block_till_done()
+    assert len(grocy.stock) == 2
+
+
+async def test_daily_time_triggers_check(hass: HomeAssistant) -> None:
+    from pytest_homeassistant_custom_component.common import async_fire_time_changed
+
+    from homeassistant.util import dt as dt_util
+
+    entry, picnic, grocy = await _setup(hass, {"dry_run": False, "daily_time": "20:00:00"})
+    picnic.deliveries.insert(0, {"delivery_id": "D2", "status": "COMPLETED"})
+    now = dt_util.now()
+    target = now.replace(hour=20, minute=0, second=0, microsecond=0)
+    if target <= now:
+        from datetime import timedelta
+
+        target += timedelta(days=1)
+    async_fire_time_changed(hass, target)
+    await hass.async_block_till_done()
+    assert len(grocy.stock) == 2
+
+
+async def test_delivery_sensor_starts_follow_up_checks(hass: HomeAssistant) -> None:
+    from datetime import timedelta
+
+    from pytest_homeassistant_custom_component.common import async_fire_time_changed
+
+    from homeassistant.util import dt as dt_util
+
+    hass.states.async_set("sensor.picnic_delivery", "2026-11-21T14:54:03+00:00")
+    entry, picnic, grocy = await _setup(
+        hass, {"dry_run": False, "delivery_sensor": "sensor.picnic_delivery"}
+    )
+    hass.states.async_set("sensor.picnic_delivery", "2026-11-28T15:00:00+00:00")
+    await hass.async_block_till_done()
+
+    # Invoice not sent yet at the first follow-up check ...
+    async_fire_time_changed(hass, dt_util.utcnow() + timedelta(minutes=16))
+    await hass.async_block_till_done()
+    assert grocy.stock == []
+    # ... but completed before the next one.
+    picnic.deliveries.insert(0, {"delivery_id": "D2", "status": "COMPLETED"})
+    async_fire_time_changed(hass, dt_util.utcnow() + timedelta(hours=1, minutes=1))
+    await hass.async_block_till_done()
+    assert len(grocy.stock) == 2

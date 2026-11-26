@@ -30,6 +30,9 @@ OPT_QU_ID: Final = "quantity_unit_id"
 OPT_BBD_PERISHABLE: Final = "best_before_days_perishable"
 OPT_BBD_DURABLE: Final = "best_before_days_durable"
 OPT_SKIP_KEYWORDS: Final = "skip_keywords"
+OPT_DAILY_TIME: Final = "daily_time"
+OPT_DELIVERY_SENSOR: Final = "delivery_sensor"
+DEFAULT_DAILY_TIME: Final = "20:00:00"
 OPT_FRESH_KEYWORDS: Final = "fresh_keywords"
 
 DEFAULT_OPTIONS: Final = {
@@ -40,6 +43,7 @@ DEFAULT_OPTIONS: Final = {
     OPT_BBD_PERISHABLE: 7,
     OPT_BBD_DURABLE: 180,
     OPT_SKIP_KEYWORDS: "Pfand, Tüte, Tasche",
+    OPT_DAILY_TIME: DEFAULT_DAILY_TIME,
     OPT_FRESH_KEYWORDS: (
         "Tomate, Gurke, Paprika, Champignon, Pilz, Rucola, Salat, Spinat, "
         "Zucchini, Aubergine, Brokkoli, Blumenkohl, Möhre, Karotte, Lauch, "
@@ -50,7 +54,15 @@ DEFAULT_OPTIONS: Final = {
     ),
 }
 
-UPDATE_INTERVAL: Final = timedelta(minutes=30)
+# After Picnic reports a delivery, the invoice e-mail (and with it the
+# COMPLETED status) can take a while: check again after these delays.
+FOLLOW_UP_DELAYS: Final = (
+    timedelta(minutes=15),
+    timedelta(hours=1),
+    timedelta(hours=3),
+    timedelta(hours=6),
+)
+PICNIC_DELIVERY_UNIQUE_SUFFIX: Final = ".last_order_delivery_time"
 
 BARCODE_PREFIX: Final = "picnic:"
 

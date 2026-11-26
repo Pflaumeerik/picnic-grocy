@@ -21,7 +21,6 @@ from .const import (
     OPT_AUTO_IMPORT,
     OPT_DRY_RUN,
     STORAGE_VERSION,
-    UPDATE_INTERVAL,
 )
 from .grocy_api import GrocyAuthError, GrocyClient, GrocyError
 from .importer import ImportResult, Importer
@@ -50,7 +49,7 @@ class PicnicGrocyCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             _LOGGER,
             config_entry=entry,
             name=DOMAIN,
-            update_interval=UPDATE_INTERVAL,
+            update_interval=None,  # driven by time, button and delivery sensor
         )
         self.picnic = picnic
         self.grocy = grocy
@@ -60,6 +59,7 @@ class PicnicGrocyCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self._state: dict[str, Any] = {}
         self._updating = False
         self._auth_failures = 0
+        self.new_deliveries_imported = 0
         self.options_at_setup = dict(entry.options)
 
     @property
@@ -99,6 +99,7 @@ class PicnicGrocyCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         finally:
             self._persist_token()
         self._auth_failures = 0
+        self.new_deliveries_imported = 0
         return [d for d in deliveries if d.get("delivery_id")]
 
     async def _async_update_data(self) -> dict[str, Any]:
@@ -122,6 +123,7 @@ class PicnicGrocyCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             await self._save()
         elif self.options[OPT_AUTO_IMPORT]:
             # Picnic lists newest first; import oldest first.
+            self.new_deliveries_imported = 0
             for delivery in reversed(deliveries):
                 delivery_id = delivery["delivery_id"]
                 if delivery_id in known:
@@ -130,6 +132,7 @@ class PicnicGrocyCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                     await self.async_import(
                         delivery_id, dry_run=self.options[OPT_DRY_RUN], mark_known=True
                     )
+                    self.new_deliveries_imported += 1
                 except HomeAssistantError as err:
                     _LOGGER.warning("Import of delivery %s failed: %s", delivery_id, err)
                     break

@@ -32,8 +32,9 @@ from .const import (
 from .coordinator import PicnicGrocyCoordinator
 from .grocy_api import GrocyClient
 from .picnic_api import PicnicClient
+from .scheduler import ImportScheduler
 
-PLATFORMS = [Platform.SENSOR]
+PLATFORMS = [Platform.BUTTON, Platform.SENSOR]
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 type PicnicGrocyConfigEntry = ConfigEntry[PicnicGrocyCoordinator]
@@ -98,6 +99,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: PicnicGrocyConfigEntry) 
     entry.runtime_data = coordinator
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    scheduler = ImportScheduler(hass, coordinator)
+    scheduler.start()
+    entry.async_on_unload(scheduler.stop)
     entry.async_on_unload(entry.add_update_listener(_reload_on_options))
     return True
 

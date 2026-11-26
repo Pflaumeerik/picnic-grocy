@@ -66,14 +66,18 @@
           "skip_keywords": "Skip articles containing (comma-separated)",
           "fresh_keywords": "Fresh produce keywords (part of a name, comma-separated)",
           "location_chilled_id": "Storage location for new chilled products",
-          "fresh_product_group_id": "Product group for new fresh products"
+          "fresh_product_group_id": "Product group for new fresh products",
+          "daily_time": "Daily check at",
+          "delivery_sensor": "Picnic delivery sensor (optional)"
         },
         "data_description": {
           "dry_run": "Leave on until a test import looks right.",
           "best_before_days_durable": "0 = never expires.",
           "fresh_keywords": "New products whose name contains one of these get the fresh due days. Chilled goods are detected automatically. A leading “-” excludes, e.g. -canned.",
           "location_chilled_id": "Picnic marks chilled goods. Automatic = a location named Fridge/Kühlschrank.",
-          "fresh_product_group_id": "Lets automations treat fresh goods separately. Automatic = a group named Frischware/Fresh."
+          "fresh_product_group_id": "Lets automations treat fresh goods separately. Automatic = a group named Frischware/Fresh.",
+          "daily_time": "Picnic is asked once a day at this time.",
+          "delivery_sensor": "'Last order delivery time' of the Picnic integration. When it changes, the delivery is checked a few times over the next hours. Empty = found automatically."
         }
       }
     }
@@ -90,6 +94,11 @@
     "sensor": {
       "last_import": {
         "name": "Last import"
+      }
+    },
+    "button": {
+      "check_now": {
+        "name": "Check deliveries now"
       }
     }
   },

@@ -66,14 +66,18 @@
           "skip_keywords": "Artikel überspringen, die enthalten (kommagetrennt)",
           "fresh_keywords": "Stichwörter für Frischware (Namensteil, kommagetrennt)",
           "location_chilled_id": "Lagerort für neue Kühlware",
-          "fresh_product_group_id": "Produktgruppe für neue Frischware"
+          "fresh_product_group_id": "Produktgruppe für neue Frischware",
+          "daily_time": "Tägliche Prüfung um",
+          "delivery_sensor": "Picnic-Lieferungssensor (optional)"
         },
         "data_description": {
           "dry_run": "Eingeschaltet lassen, bis ein Probeimport passt.",
           "best_before_days_durable": "0 = läuft nie ab.",
           "fresh_keywords": "Neue Produkte, deren Name eines davon enthält, bekommen das Frischware-MHD. Kühlware erkennt Picnic selbst. Mit „-“ davor schließt ein Wort aus, z. B. -passiert.",
           "location_chilled_id": "Picnic kennzeichnet Kühlware. Automatisch = Lagerort namens Kühlschrank.",
-          "fresh_product_group_id": "Damit Automationen Frischware gesondert behandeln können. Automatisch = Gruppe namens Frischware."
+          "fresh_product_group_id": "Damit Automationen Frischware gesondert behandeln können. Automatisch = Gruppe namens Frischware.",
+          "daily_time": "Einmal täglich wird zu dieser Uhrzeit bei Picnic nachgefragt.",
+          "delivery_sensor": "„Lieferzeit der letzten Bestellung“ der Picnic-Integration. Ändert er sich, wird in den folgenden Stunden mehrmals nach der Lieferung geschaut. Leer = automatisch gefunden."
         }
       }
     }
@@ -90,6 +94,11 @@
     "sensor": {
       "last_import": {
         "name": "Letzter Import"
+      }
+    },
+    "button": {
+      "check_now": {
+        "name": "Lieferungen jetzt prüfen"
       }
     }
   },

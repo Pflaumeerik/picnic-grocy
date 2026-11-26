@@ -8,7 +8,7 @@ Home Assistant integration that books your delivered [Picnic](https://picnic.app
 
 ## How it works
 
-1. Every 30 minutes the integration asks Picnic for **completed** deliveries. Picnic marks a delivery completed once the invoice e-mail is sent, so missing or substituted articles are already settled.
+1. The integration asks Picnic for **completed** deliveries once a day (default 20:00), when you press the button *Check deliveries now*, and a few times in the hours after Home Assistant's own Picnic integration reports a delivery. Picnic marks a delivery completed once the invoice e-mail is sent, so missing or substituted articles are already settled.
 2. For each new delivery it reads the delivered articles and their quantities.
 3. Each Picnic article is matched to a Grocy product via the barcode `picnic:<article id>`. If there is none yet, it optionally matches an existing product with exactly the same name, or creates a new product (storage location, quantity unit and default due days from the options).
 4. The articles are added to stock as a purchase, with price and due date (today + the product's default due days).
@@ -62,7 +62,7 @@ Bucht gelieferte Picnic-Einkäufe nach jeder Lieferung automatisch in Grocy ein.
 
 > **Inoffiziell.** Kein Projekt von Picnic. Es nutzt die nicht dokumentierte App-Schnittstelle von Picnic. Ändert Picnic sie, funktioniert der Import erst nach einem Update wieder.
 
-**Ablauf:** Alle 30 Minuten fragt die Integration bei Picnic nach **abgeschlossenen** Lieferungen. Abgeschlossen ist eine Lieferung erst, wenn die Rechnungsmail verschickt wurde, fehlende oder ersetzte Artikel sind dann also schon berücksichtigt. Jeder Picnic-Artikel wird über den Barcode `picnic:<Artikelnummer>` einem Grocy-Produkt zugeordnet. Gibt es keins, ordnet die Integration ein Produkt mit exakt gleichem Namen zu oder legt ein neues an. Danach bucht sie den Artikel als Einkauf ein, mit Preis und MHD (heute + Standard-MHD des Produkts).
+**Ablauf:** Die Integration fragt bei Picnic nach **abgeschlossenen** Lieferungen: einmal täglich (Standard 20:00), auf Knopfdruck („Lieferungen jetzt prüfen“) und mehrmals in den Stunden nach einer Lieferung, die die Picnic-Integration von Home Assistant meldet. Abgeschlossen ist eine Lieferung erst, wenn die Rechnungsmail verschickt wurde, fehlende oder ersetzte Artikel sind dann also schon berücksichtigt. Jeder Picnic-Artikel wird über den Barcode `picnic:<Artikelnummer>` einem Grocy-Produkt zugeordnet. Gibt es keins, ordnet die Integration ein Produkt mit exakt gleichem Namen zu oder legt ein neues an. Danach bucht sie den Artikel als Einkauf ein, mit Preis und MHD (heute + Standard-MHD des Produkts).
 
 Lieferungen, die es beim Einrichten schon gab, werden nicht automatisch importiert. Dafür gibt es die Aktion `picnic_grocy.import_delivery`.
 
