@@ -104,7 +104,7 @@ class PicnicClient:
                     return None
                 body = await resp.text()
                 if resp.status in (401, 403):
-                    raise PicnicAuthError(f"HTTP {resp.status}")
+                    raise PicnicAuthError(f"HTTP {resp.status}: {body[:300]}")
                 data: Any = None
                 if body:
                     try:

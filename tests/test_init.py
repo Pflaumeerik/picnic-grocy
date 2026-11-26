@@ -95,3 +95,26 @@ async def test_unload(hass: HomeAssistant) -> None:
     entry, _, _ = await _setup(hass)
     assert await hass.config_entries.async_unload(entry.entry_id)
     assert entry.state is ConfigEntryState.NOT_LOADED
+
+
+async def test_single_auth_error_does_not_force_reauth(hass: HomeAssistant) -> None:
+    from homeassistant.config_entries import SOURCE_REAUTH
+
+    from custom_components.picnic_grocy.picnic_api import PicnicAuthError
+
+    entry, picnic, _ = await _setup(hass)
+    calls = {"n": 0}
+
+    async def flaky(statuses=None):
+        calls["n"] += 1
+        raise PicnicAuthError("HTTP 403")
+
+    picnic.get_deliveries = flaky
+    coordinator = entry.runtime_data
+    for _ in range(2):
+        await coordinator.async_refresh()
+    await hass.async_block_till_done()
+    assert not [f for f in hass.config_entries.flow.async_progress() if f["context"]["source"] == SOURCE_REAUTH]
+    await coordinator.async_refresh()
+    await hass.async_block_till_done()
+    assert [f for f in hass.config_entries.flow.async_progress() if f["context"]["source"] == SOURCE_REAUTH]

@@ -30,6 +30,7 @@ from .picnic_api import PicnicAuthError, PicnicClient, PicnicError, parse_articl
 _LOGGER = logging.getLogger(__name__)
 
 MAX_KNOWN = 200  # remembered delivery IDs
+AUTH_FAILURES_BEFORE_REAUTH = 3  # one rejected poll is not proof the login expired
 
 
 class PicnicGrocyCoordinator(DataUpdateCoordinator[dict[str, Any]]):
@@ -58,6 +59,7 @@ class PicnicGrocyCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         )
         self._state: dict[str, Any] = {}
         self._updating = False
+        self._auth_failures = 0
         self.options_at_setup = dict(entry.options)
 
     @property
@@ -84,9 +86,19 @@ class PicnicGrocyCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         try:
             deliveries = await self.picnic.get_deliveries(["COMPLETED"])
         except PicnicAuthError as err:
-            raise ConfigEntryAuthFailed(str(err)) from err
+            self._auth_failures += 1
+            _LOGGER.warning(
+                "Picnic rejected the request (%s/%s): %s",
+                self._auth_failures,
+                AUTH_FAILURES_BEFORE_REAUTH,
+                err,
+            )
+            if self._auth_failures >= AUTH_FAILURES_BEFORE_REAUTH:
+                raise ConfigEntryAuthFailed(str(err)) from err
+            raise PicnicError(f"Request rejected, retrying later: {err}") from err
         finally:
             self._persist_token()
+        self._auth_failures = 0
         return [d for d in deliveries if d.get("delivery_id")]
 
     async def _async_update_data(self) -> dict[str, Any]:
